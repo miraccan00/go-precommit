@@ -24,9 +24,8 @@ archives:
 checksum:
   name_template: "checksums.txt"
 
-dockers_v2:
-  - id: amd64
-    image_templates:
+dockers:
+  - image_templates:
       - "ghcr.io/miraccan00/go-precommit:{{ .Tag }}-amd64"
       - "ghcr.io/miraccan00/go-precommit:latest-amd64"
     use: buildx
@@ -38,8 +37,7 @@ dockers_v2:
     goos: linux
     goarch: amd64
 
-  - id: arm64
-    image_templates:
+  - image_templates:
       - "ghcr.io/miraccan00/go-precommit:{{ .Tag }}-arm64"
       - "ghcr.io/miraccan00/go-precommit:latest-arm64"
     use: buildx
