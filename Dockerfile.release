@@ -1,0 +1,11 @@
+FROM alpine:3
+
+RUN apk add --no-cache ca-certificates tzdata \
+    && mkdir -p /workspace
+
+COPY go-precommit /usr/local/bin/go-precommit
+
+WORKDIR /workspace
+
+ENTRYPOINT ["go-precommit"]
+CMD ["run"]

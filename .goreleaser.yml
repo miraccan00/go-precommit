@@ -18,14 +18,15 @@ builds:
       - -s -w
 
 archives:
-  - format: binary
+  - formats: [binary]
     name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
 
 checksum:
   name_template: "checksums.txt"
 
-dockers:
-  - image_templates:
+dockers_v2:
+  - id: amd64
+    image_templates:
       - "ghcr.io/miraccan00/go-precommit:{{ .Tag }}-amd64"
       - "ghcr.io/miraccan00/go-precommit:latest-amd64"
     use: buildx
@@ -33,9 +34,12 @@ dockers:
       - "--platform=linux/amd64"
       - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--label=org.opencontainers.image.revision={{ .Commit }}"
-    dockerfile: Dockerfile
+    dockerfile: Dockerfile.release
+    goos: linux
+    goarch: amd64
 
-  - image_templates:
+  - id: arm64
+    image_templates:
       - "ghcr.io/miraccan00/go-precommit:{{ .Tag }}-arm64"
       - "ghcr.io/miraccan00/go-precommit:latest-arm64"
     use: buildx
@@ -43,7 +47,8 @@ dockers:
       - "--platform=linux/arm64"
       - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--label=org.opencontainers.image.revision={{ .Commit }}"
-    dockerfile: Dockerfile
+    dockerfile: Dockerfile.release
+    goos: linux
     goarch: arm64
 
 docker_manifests:
