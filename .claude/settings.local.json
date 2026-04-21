@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go version *)",
+      "Bash(go mod *)",
+      "Bash(go get *)",
+      "Bash(go build *)",
+      "Bash(./go-precommit --help)",
+      "Read(//private/tmp/test-go-precommit/**)",
+      "Bash(/Users/miracyilmaz/Desktop/myprojects/go-precommit/go-precommit run *)",
+      "Bash(echo \"Exit: $?\")",
+      "Bash(/Users/miracyilmaz/Desktop/myprojects/go-precommit/go-precommit install *)",
+      "Bash(./go-precommit sample-config *)",
+      "Bash(find /Users/miracyilmaz/Desktop/myprojects/go-precommit -name \"*.go\" -exec sed -i '' 's|github.com/miracyilmaz/go-precommit|github.com/miraccan00/go-precommit|g' {} \\\\;)",
+      "Bash(docker build *)",
+      "Bash(colima start *)",
+      "Bash(wait)",
+      "Bash(docker image *)",
+      "Bash(awk '{printf \"Image size: %.1f MB\\\\n\", $1/1024/1024}')",
+      "Bash(docker run *)",
+      "Bash(colima status *)",
+      "Bash(colima list *)",
+      "Read(//private/tmp/**)",
+      "Bash(./go-precommit run *)",
+      "Read(//Users/miracyilmaz/Library/Caches/go-precommit/repos/**)",
+      "Read(//Users/miracyilmaz/Library/Caches/go-precommit/envs/**)",
+      "Bash(~/Library/Caches/go-precommit/envs/915197216b9c25e775aa03e7/bin/debug-statement-hook /tmp/remote-test/debug_test.py)",
+      "Bash(chmod +x /Users/miracyilmaz/Desktop/myprojects/go-precommit/install.sh)",
+      "Bash(brew install *)",
+      "Bash(golangci-lint run *)"
+    ]
+  }
+}

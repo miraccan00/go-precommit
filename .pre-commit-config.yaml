@@ -1,0 +1,26 @@
+repos:
+  - repo: local
+    hooks:
+      - id: go-vet
+        name: Go Vet
+        entry: go vet ./...
+        language: system
+        types: [go]
+        pass_filenames: false
+        stages: [pre-commit]
+
+      - id: golangci-lint
+        name: Go Lint
+        entry: golangci-lint run
+        language: system
+        types: [go]
+        pass_filenames: false
+        stages: [pre-commit]
+
+      - id: go-build
+        name: Go Build
+        entry: go build ./...
+        language: system
+        types: [go]
+        pass_filenames: false
+        stages: [pre-push]
