@@ -33,7 +33,9 @@
       "Bash(go install *)",
       "Bash(go-precommit --version)",
       "Bash(/tmp/go-precommit-new run *)",
-      "Bash(sudo cp *)"
+      "Bash(sudo cp *)",
+      "Bash(git -C /Users/miracyilmaz/Desktop/myprojects/go-precommit branch --show-current)",
+      "Bash(git add *)"
     ]
   }
 }

@@ -347,6 +347,42 @@ The hooks that run on every commit/push:
 
 This file is the **hook manifest** for remote use. It must stay in the repository root. Every hook listed here becomes available when someone points their config at `repo: https://github.com/miraccan00/go-precommit`. Adding a new built-in hook requires a matching entry here.
 
+### Running tests
+
+```bash
+go test ./...
+```
+
+### Test architecture — Arrange-Act-Assert
+
+Every test in this repository follows the **Arrange-Act-Assert (AAA)** pattern:
+
+| Phase | Purpose |
+|---|---|
+| **Arrange** | Set up inputs, temp files, and any preconditions |
+| **Act** | Call the function or method under test — one action per test |
+| **Assert** | Verify the outcome with a clear error message on failure |
+
+Each phase is marked with a `// Arrange`, `// Act`, and `// Assert` comment. When Arrange and Act are a single expression, the comment is written as `// Arrange + Act`.
+
+```go
+t.Run("file with RSA private key header returns 1", func(t *testing.T) {
+    // Arrange
+    dir := t.TempDir()
+    path := writeTestFile(t, dir, "key.pem", []byte("-----BEGIN RSA PRIVATE KEY-----\n"))
+
+    // Act
+    got := RunDetectPrivateKey([]string{path})
+
+    // Assert
+    if got != 1 {
+        t.Errorf("got %d, want 1", got)
+    }
+})
+```
+
+Tests for hooks that require git state (e.g. `no-commit-to-branch`, `forbid-new-submodules`) run directly against the repository's own git index and HEAD, using `t.Skip` when the prerequisite state cannot be met (detached HEAD, no repository).
+
 ## License
 
 MIT

@@ -53,7 +53,7 @@ repos:
         entry: go-precommit run detect-private-key --files
         types: [text]
         pass_filenames: true
-        exclude: _test\.go$|internal/hooks/builtin\.go
+        exclude: _test\.go$|internal/hooks/builtin\.go|\.md$|\.claude/
 
       - id: detect-aws-credentials
         name: Detect AWS credentials

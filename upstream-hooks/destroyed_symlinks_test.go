@@ -4,6 +4,53 @@ import (
 	"testing"
 )
 
+func TestRunDestroyedSymlinks(t *testing.T) {
+	t.Run("no files returns 0", func(t *testing.T) {
+		// Arrange + Act
+		got := RunDestroyedSymlinks(nil)
+
+		// Assert
+		if got != 0 {
+			t.Errorf("got %d, want 0", got)
+		}
+	})
+
+	t.Run("invalid flag causes early exit with 1", func(t *testing.T) {
+		// Arrange
+		args := []string{"--unknown-flag-xyzzy"}
+
+		// Act
+		got := RunDestroyedSymlinks(args)
+
+		// Assert
+		if got != 1 {
+			t.Errorf("got %d, want 1 for unrecognised flag", got)
+		}
+	})
+
+	t.Run("file not in git index returns 0", func(t *testing.T) {
+		// Arrange — file is in a temp dir so it will not be in the git index;
+		// findDestroyedSymlinks skips any path not present in the index.
+		repo, err := openRepo()
+		if err != nil {
+			t.Skip("not inside a git repository")
+		}
+		if _, err := repo.Head(); err != nil {
+			t.Skip("HEAD is not available")
+		}
+		dir := t.TempDir()
+		path := writeTestFile(t, dir, "untracked.txt", []byte("content"))
+
+		// Act
+		got := RunDestroyedSymlinks([]string{path})
+
+		// Assert
+		if got != 0 {
+			t.Errorf("got %d, want 0 for untracked file", got)
+		}
+	})
+}
+
 func TestTrimBytes(t *testing.T) {
 	tests := []struct {
 		name  string
