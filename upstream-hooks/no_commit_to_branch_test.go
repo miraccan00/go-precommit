@@ -24,8 +24,9 @@ func TestRunNoCommitToBranch(t *testing.T) {
 	})
 
 	t.Run("non-matching pattern does not block commit", func(t *testing.T) {
-		// Arrange
-		args := []string{"--pattern", "^definitely-not-matching-xyzzy$"}
+		// Arrange — supply an explicit --branch that can't match so the default
+		// ["master","main"] protection is replaced and only the pattern is tested.
+		args := []string{"--branch", "definitely-not-a-real-branch-xyzzy", "--pattern", "^definitely-not-matching-xyzzy$"}
 
 		// Act
 		got := RunNoCommitToBranch(args)
