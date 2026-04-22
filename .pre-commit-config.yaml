@@ -1,6 +1,91 @@
 repos:
   - repo: local
     hooks:
+
+      # ── File hygiene ──────────────────────────────────────────────────────────
+      - id: trailing-whitespace
+        name: Trim trailing whitespace
+        language: system
+        entry: go-precommit run trailing-whitespace --files
+        types: [text]
+        pass_filenames: true
+
+      - id: end-of-file-fixer
+        name: Fix end of files
+        language: system
+        entry: go-precommit run end-of-file-fixer --files
+        types: [text]
+        pass_filenames: true
+
+      - id: mixed-line-ending
+        name: Mixed line ending
+        language: system
+        entry: go-precommit run mixed-line-ending --files
+        types: [text]
+        pass_filenames: true
+
+      # ── Syntax checks ─────────────────────────────────────────────────────────
+      - id: check-yaml
+        name: Check YAML
+        language: system
+        entry: go-precommit run check-yaml --files
+        types: [yaml]
+        pass_filenames: true
+
+      - id: check-json
+        name: Check JSON
+        language: system
+        entry: go-precommit run check-json --files
+        types: [json]
+        pass_filenames: true
+
+      - id: check-toml
+        name: Check TOML
+        language: system
+        entry: go-precommit run check-toml --files
+        types: [toml]
+        pass_filenames: true
+
+      # ── Security ──────────────────────────────────────────────────────────────
+      - id: detect-private-key
+        name: Detect private key
+        language: system
+        entry: go-precommit run detect-private-key --files
+        types: [text]
+        pass_filenames: true
+        exclude: _test\.go$|internal/hooks/builtin\.go|\.md$|\.claude/
+
+      - id: detect-aws-credentials
+        name: Detect AWS credentials
+        language: system
+        entry: go-precommit run detect-aws-credentials --files
+        args: [--allow-missing-credentials]
+        types: [text]
+        pass_filenames: true
+
+      # ── Git hygiene ───────────────────────────────────────────────────────────
+      - id: check-merge-conflict
+        name: Check for merge conflicts
+        language: system
+        entry: go-precommit run check-merge-conflict --files
+        types: [text]
+        pass_filenames: true
+
+      - id: check-added-large-files
+        name: Check for added large files
+        language: system
+        entry: go-precommit run check-added-large-files
+        pass_filenames: false
+        always_run: true
+
+      - id: no-commit-to-branch
+        name: No commit to branch
+        language: system
+        entry: go-precommit run no-commit-to-branch
+        pass_filenames: false
+        always_run: true
+
+      # ── Go project quality ────────────────────────────────────────────────────
       - id: go-vet
         name: Go Vet
         entry: go vet ./...

@@ -27,7 +27,15 @@
       "Bash(~/Library/Caches/go-precommit/envs/915197216b9c25e775aa03e7/bin/debug-statement-hook /tmp/remote-test/debug_test.py)",
       "Bash(chmod +x /Users/miracyilmaz/Desktop/myprojects/go-precommit/install.sh)",
       "Bash(brew install *)",
-      "Bash(golangci-lint run *)"
+      "Bash(golangci-lint run *)",
+      "Bash(go test *)",
+      "Bash(go-precommit run *)",
+      "Bash(go install *)",
+      "Bash(go-precommit --version)",
+      "Bash(/tmp/go-precommit-new run *)",
+      "Bash(sudo cp *)",
+      "Bash(git -C /Users/miracyilmaz/Desktop/myprojects/go-precommit branch --show-current)",
+      "Bash(git add *)"
     ]
   }
 }

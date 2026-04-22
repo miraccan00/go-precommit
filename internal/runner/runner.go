@@ -210,11 +210,12 @@ func (r *Runner) runOne(repoURL, repoRev string, hookCfg *config.Hook, files []s
 	eff.repoLocalPath = localRepoPath
 
 	// ── Go built-in fast path ────────────────────────────────────────────────
-	// Built-ins are preferred regardless of repo URL: if the hook ID has a Go
-	// implementation we use it directly — no Python/Node/etc. required.
-	// A user can force the upstream implementation by setting entry: explicitly.
+	// Built-ins are always preferred when available. The entry: field in
+	// .pre-commit-config.yaml exists so the Python pre-commit tool knows how
+	// to invoke go-precommit; it is not an override for go-precommit's own
+	// execution (using it would cause infinite recursion).
 	builtinDef, isBuiltin := hooks.Registry[eff.id]
-	if isBuiltin && hookCfg.Entry == "" {
+	if isBuiltin {
 		return r.runBuiltin(builtinDef, eff, files)
 	}
 
