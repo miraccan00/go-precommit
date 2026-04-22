@@ -10,36 +10,88 @@ The Python `pre-commit` tool is widely adopted but comes with friction:
 - **Slow cold starts** — virtualenv creation and package installation on first run can take 30–60 seconds
 - **Runtime overhead** — even simple checks like trailing whitespace spawn Python subprocesses
 - **CI bloat** — Docker images or CI pipelines need Python installed just to run pre-commit hooks
-- **External git binary** — relies on the `git` CLI being available in PATH
 
 `go-precommit` solves this by shipping the most common hooks as native Go code inside a single static binary. No Python, no Node, no external `git` binary required for the majority of use cases.
 
 ## Key Features
 
-### Zero-dependency core hooks (pure Go, no subprocess)
-The most frequently used hooks run entirely in-process with no external tools:
+### Zero-dependency built-in hooks (pure Go, no subprocess)
+
+All hooks below run entirely in-process. When a config references one of these IDs — regardless of the `repo:` URL — `go-precommit` uses the Go implementation directly, skipping any Python virtualenv.
+
+#### File hygiene
 
 | Hook ID | What it does |
 |---|---|
 | `trailing-whitespace` | Strips trailing spaces and tabs; **auto-fixes files** |
 | `end-of-file-fixer` | Ensures every file ends with exactly one newline; **auto-fixes files** |
-| `check-yaml` | Validates YAML syntax |
+| `fix-byte-order-marker` | Removes the UTF-8 BOM (`\xEF\xBB\xBF`); **auto-fixes files** |
+| `mixed-line-ending` | Detects or normalises mixed CRLF/LF line endings; **auto-fixes files** |
+| `file-contents-sorter` | Sorts lines in target files alphabetically (`--ignore-case`, `--unique`) |
+
+#### Syntax checks
+
+| Hook ID | What it does |
+|---|---|
+| `check-yaml` | Validates YAML syntax (`--allow-multiple-documents`) |
 | `check-json` | Validates JSON syntax |
 | `check-toml` | Validates TOML syntax |
-| `check-merge-conflict` | Detects unresolved merge conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`) |
-| `detect-private-key` | Blocks PEM private keys from being committed (RSA, EC, OPENSSH, PGP, etc.) |
-| `check-added-large-files` | Rejects files exceeding a size threshold (default 500 KB, configurable via `--maxkb`) |
-| `mixed-line-ending` | Detects files with both CRLF and LF line endings |
-| `check-case-conflict` | Finds filename conflicts that would break case-insensitive filesystems (macOS, Windows) |
-| `check-symlinks` | Detects broken symbolic links |
-| `no-commit-to-branch` | Blocks direct commits to protected branches (`main`, `master`, or custom via `--branch`) |
-| `check-executables-have-shebangs` | Ensures executable files start with `#!` |
+| `check-xml` | Validates XML syntax |
+| `pretty-format-json` | Enforces consistent JSON formatting (`--autofix`, `--indent`, `--top-keys`) |
+| `sort-simple-yaml` | Sorts top-level keys of simple YAML mappings; **auto-fixes files** |
 
-When a config references one of the above IDs from any remote repo (e.g. `pre-commit/pre-commit-hooks`), `go-precommit` uses the Go implementation directly — no Python virtualenv is created.
+#### Security
+
+| Hook ID | What it does |
+|---|---|
+| `detect-private-key` | Blocks PEM private keys (RSA, EC, OPENSSH, PGP, PuTTY, OpenVPN …) |
+| `detect-aws-credentials` | Detects AWS secret keys from your local credential files (`--allow-missing-credentials`) |
+
+#### Git hygiene
+
+| Hook ID | What it does |
+|---|---|
+| `check-merge-conflict` | Detects unresolved merge conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`) |
+| `check-added-large-files` | Rejects files exceeding a size threshold (default 500 KB, `--maxkb`) |
+| `no-commit-to-branch` | Blocks direct commits to protected branches (`--branch`, `--pattern`) |
+| `forbid-new-submodules` | Prevents addition of new git submodules |
+| `destroyed-symlinks` | Detects symlinks that were accidentally replaced by plain files |
+
+#### Portability & filesystem
+
+| Hook ID | What it does |
+|---|---|
+| `check-case-conflict` | Finds filename conflicts that would break case-insensitive filesystems (macOS, Windows) |
+| `check-illegal-windows-names` | Detects filenames illegal on Windows (`CON`, `PRN`, `AUX`, reserved characters) |
+| `check-symlinks` | Detects broken symbolic links |
+| `check-executables-have-shebangs` | Ensures executable files start with `#!` |
+| `check-shebang-scripts-are-executable` | Ensures files with `#!` have the executable bit set |
+| `check-vcs-permalinks` | Detects non-permanent GitHub blob links (branch-based instead of commit-hash-based) |
+
+### Use go-precommit as a remote repo
+
+Reference go-precommit directly in any project's `.pre-commit-config.yaml`. The binary is downloaded and cached automatically — no Go toolchain required on the target machine:
+
+```yaml
+repos:
+  - repo: https://github.com/miraccan00/go-precommit
+    rev: v1.0.0   # pin to a release tag
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: detect-private-key
+      - id: no-commit-to-branch
+        args: [--branch, main, --branch, develop]
+      - id: check-added-large-files
+        args: [--maxkb, "1000"]
+```
+
+The `.pre-commit-hooks.yaml` file in this repository is the **hook manifest** — it declares every available hook ID, its binary entry point, accepted file types, and flags. pre-commit (and go-precommit itself) reads this file when the repo is used remotely.
 
 ### Compatible `.pre-commit-config.yaml` format
 
-Uses the same config format as the original Python tool. Existing configs work without modification:
+Uses the same config format as the original Python tool. Existing configs that reference `pre-commit/pre-commit-hooks` work without modification:
 
 ```yaml
 repos:
@@ -251,6 +303,7 @@ git commit
 | | go-precommit | pre-commit (Python) |
 |---|---|---|
 | Runtime required | None (static binary) | Python 3.x + pip |
+| Built-in hooks | 25 (pure Go) | 50 (Python) |
 | Common hook speed | ~10ms (in-process) | ~500ms (subprocess) |
 | First-run setup | Instant | 30–60s (virtualenv) |
 | External git binary | Not required | Required |
@@ -258,6 +311,41 @@ git commit
 | Remote repos | ✓ | ✓ |
 | Python/Node hooks | ✓ (env auto-setup) | ✓ |
 | Docker image size | ~16 MB | ~200 MB+ |
+
+## Contributing
+
+### Development hooks (`.pre-commit-config.yaml`)
+
+This repository uses go-precommit on itself. After cloning, install the git hooks:
+
+```bash
+go build -o go-precommit .
+./go-precommit install          # pre-commit hook
+./go-precommit install --hook-type pre-push
+```
+
+The hooks that run on every commit/push:
+
+| Stage | Hook | What it checks |
+|---|---|---|
+| pre-commit | `trailing-whitespace` | Strips trailing spaces/tabs |
+| pre-commit | `end-of-file-fixer` | Ensures single trailing newline |
+| pre-commit | `mixed-line-ending` | Detects mixed CRLF/LF |
+| pre-commit | `check-yaml` | YAML syntax |
+| pre-commit | `check-json` | JSON syntax |
+| pre-commit | `check-toml` | TOML syntax |
+| pre-commit | `detect-private-key` | No private keys in source |
+| pre-commit | `detect-aws-credentials` | No AWS secrets in source |
+| pre-commit | `check-merge-conflict` | No unresolved conflict markers |
+| pre-commit | `check-added-large-files` | Files under 500 KB |
+| pre-commit | `no-commit-to-branch` | Blocks direct commits to `main` |
+| pre-commit | `go vet` | Go static analysis |
+| pre-commit | `golangci-lint` | Go linting |
+| pre-push | `go build` | Project compiles cleanly |
+
+### `.pre-commit-hooks.yaml`
+
+This file is the **hook manifest** for remote use. It must stay in the repository root. Every hook listed here becomes available when someone points their config at `repo: https://github.com/miraccan00/go-precommit`. Adding a new built-in hook requires a matching entry here.
 
 ## License
 

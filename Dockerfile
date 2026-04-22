@@ -19,7 +19,9 @@ RUN CGO_ENABLED=0 GOOS=linux go build \
 # (needed for volume mounts, timezone data, and CA certificates).
 FROM alpine:3
 
-RUN apk add --no-cache ca-certificates tzdata \
+# git is required by hooks that shell out to the git CLI
+# (check-added-large-files, no-commit-to-branch, destroyed-symlinks, etc.)
+RUN apk add --no-cache ca-certificates git tzdata \
     && mkdir -p /workspace
 
 COPY --from=builder /out/go-precommit /usr/local/bin/go-precommit
